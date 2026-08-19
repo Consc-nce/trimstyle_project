@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - TrimStyle{% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Page Header -->
+        <div class="mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Welcome, {{ user.first_name|default:user.username }}!</h1>
+            <p class="text-lg text-gray-600">Manage your appointments and account settings</p>
+        </div>
+        
+        <!-- Customer Dashboard -->
+        {% if is_customer %}
+            <!-- Upcoming Appointments Section -->
+            <div class="mb-12">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-3xl font-bold text-gray-900">Your Upcoming Appointments</h2>
+                    <a href="{% url 'booking:service_list' %}" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-bold">
+                        Book New
+                    </a>
+                </div>
+                
+                {% if upcoming_appointments %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {% for appointment in upcoming_appointments %}
+                            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition border-l-4 border-blue-600">
+                                <div class="p-6">
+                                    <!-- Date & Time -->
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div>
+                                            <p class="text-sm text-gray-600">{{ appointment.appointment_date|date:"l, F d, Y" }}</p>
+                                            <p class="text-2xl font-bold text-gray-900">{{ appointment.start_time|time:"H:i" }}</p>
+                                        </div>
+                                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">
+                                            {{ appointment.get_status_display }}
+                                        </span>
+                                    </div>
+                                    
+                                    <!-- Service Details -->
+                                    <div class="space-y-2 mb-4">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-gray-600">Service:</span>
+                                            <span class="font-bold text-gray-900">{{ appointment.service.name }}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-gray-600">Stylist:</span>
+                                            <span class="font-bold text-gray-900">{{ appointment.staff.user.get_full_name }}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-gray-600">Duration:</span>
+                                            <span class="font-bold text-gray-900">{{ appointment.service.duration_minutes }}m</span>
+                                        </div>
+                                        <div class="flex items-center justify-between text-green-600">
+                                            <span class="text-gray-600">Price:</span>
+                                            <span class="font-bold text-lg">${{ appointment.service.price }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Actions -->
+                                    <div class="flex gap-2 pt-4 border-t border-gray-200">
+                                        <button class="flex-1 text-blue-600 hover:bg-blue-50 py-2 rounded font-bold transition">
+                                            Reschedule
+                                        </button>
+                                        <form method="post" action="{% url 'booking:cancel_appointment' appointment.id %}" class="flex-1">
+                                            {% csrf_token %}
+                                            <button type="submit" class="w-full text-red-600 hover:bg-red-50 py-2 rounded font-bold transition" 
+                                                    onclick="return confirm('Are you sure you want to cancel this appointment?')">
+                                                Cancel
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
+                        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-2">No Upcoming Appointments</h3>
+                        <p class="text-gray-600 mb-6">You don't have any scheduled appointments yet.</p>
+                        <a href="{% url 'booking:service_list' %}" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-bold">
+                            Book Your First Appointment
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Past Appointments Section -->
+            {% if past_appointments %}
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">Recent Past Appointments</h3>
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <table class="w-full">
+                            <thead class="bg-gray-100 border-b-2 border-gray-300">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-900">Date</th>
+                                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-900">Service</th>
+                                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-900">Stylist</th>
+                                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-900">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in past_appointments %}
+                                    <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                        <td class="px-6 py-4 text-gray-900">{{ appointment.appointment_date|date:"M d, Y" }}</td>
+                                        <td class="px-6 py-4 text-gray-900">{{ appointment.service.name }}</td>
+                                        <td class="px-6 py-4 text-gray-900">{{ appointment.staff.user.get_full_name }}</td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-3 py-1 rounded-full text-sm font-bold
+                                                {% if appointment.status == 'COMPLETED' %}bg-blue-100 text-blue-800
+                                                {% elif appointment.status == 'CANCELLED' %}bg-red-100 text-red-800
+                                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                                {{ appointment.get_status_display }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+        
+        <!-- Staff Dashboard -->
+        {% elif is_staff %}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <!-- Today's Appointments Card -->
+                <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-blue-600">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-bold">Today's Appointments</p>
+                            <p class="text-3xl font-bold text-gray-900">{{ today_appointments|length }}</p>
+                        </div>
+                        <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Your Services Card -->
+                {% if staff_profile %}
+                    <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-green-600">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-600 text-sm font-bold">Services Offered</p>
+                                <p class="text-3xl font-bold text-gray-900">{{ services|length }}</p>
+                            </div>
+                            <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Today's Schedule -->
+            {% if staff_profile %}
+                <div class="mb-12">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Today's Schedule</h2>
+                    
+                    {% if today_appointments %}
+                        <div class="space-y-4">
+                            {% for appointment in today_appointments %}
+                                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-600 hover:shadow-lg transition">
+                                    <div class="flex items-start justify-between">
+                                        <div>
+                                            <p class="text-2xl font-bold text-gray-900">{{ appointment.start_time|time:"H:i" }}</p>
+                                            <p class="text-gray-600 mt-2">
+                                                <strong>Client:</strong> {{ appointment.customer.get_full_name }}
+                                            </p>
+                                            <p class="text-gray-600">
+                                                <strong>Service:</strong> {{ appointment.service.name }}
+                                            </p>
+                                            <p class="text-gray-600">
+                                                <strong>Duration:</strong> {{ appointment.service.duration_minutes }}m
+                                            </p>
+                                        </div>
+                                        <span class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-bold">
+                                            {{ appointment.get_status_display }}
+                                        </span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
+                            <p class="text-gray-600">No appointments scheduled for today</p>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Upcoming Appointments (Next 7 days) -->
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Upcoming This Week</h2>
+                    
+                    {% if upcoming_appointments %}
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                            <table class="w-full">
+                                <thead class="bg-gray-100 border-b-2 border-gray-300">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-sm font-bold text-gray-900">Date</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold text-gray-900">Time</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold text-gray-900">Client</th>
+                                        <th class="px-6 py-4 text-left text-sm font-bold text-gray-900">Service</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in upcoming_appointments %}
+                                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                            <td class="px-6 py-4 text-gray-900 font-bold">{{ appointment.appointment_date|date:"M d" }}</td>
+                                            <td class="px-6 py-4 text-gray-900">{{ appointment.start_time|time:"H:i" }}</td>
+                                            <td class="px-6 py-4 text-gray-900">{{ appointment.customer.get_full_name }}</td>
+                                            <td class="px-6 py-4 text-gray-900">{{ appointment.service.name }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="bg-gray-50 rounded-lg p-12 text-center border-2 border-dashed border-gray-300">
+                            <p class="text-gray-600">No appointments scheduled for this week</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        
+        <!-- Admin Dashboard -->
+        {% elif is_admin %}
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                <!-- Total Appointments -->
+                <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-blue-600">
+                    <p class="text-gray-600 text-sm font-bold mb-2">Total Appointments</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ total_appointments }}</p>
+                    <p class="text-xs text-gray-500 mt-2">Confirmed bookings</p>
+                </div>
+                
+                <!-- Total Customers -->
+                <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-green-600">
+                    <p class="text-gray-600 text-sm font-bold mb-2">Total Customers</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ total_customers }}</p>
+                    <p class="text-xs text-gray-500 mt-2">Registered users</p>
+                </div>
+                
+                <!-- Total Staff -->
+                <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-purple-600">
+                    <p class="text-gray-600 text-sm font-bold mb-2">Total Staff</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ total_staff }}</p>
+                    <p class="text-xs text-gray-500 mt-2">Team members</p>
+                </div>
+                
+                <!-- Admin Panel Link -->
+                <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-orange-600">
+                    <p class="text-gray-600 text-sm font-bold mb-4">Admin Panel</p>
+                    <a href="{% url 'admin:index' %}" class="inline-block bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 font-bold text-sm">
+                        Go to Admin
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Today's Overview -->
+            {% if today_appointments %}
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-6">Today's Appointments</h2>
+                    
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <table class="w-full">
+                            <thead class="bg-gray-100 border-b-2 border-gray-300">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-900">Time</th>
+                                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-900">Customer</th>
+                                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-900">Stylist</th>
+                                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-900">Service</th>
+                                    <th class="px-6 py-4 text-left text-sm font-bold text-gray-900">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in today_appointments %}
+                                    <tr class="border-b border-gray-200 hover:bg-gray-50">
+                                        <td class="px-6 py-4 text-gray-900 font-bold">{{ appointment.start_time|time:"H:i" }}</td>
+                                        <td class="px-6 py-4 text-gray-900">{{ appointment.customer.get_full_name }}</td>
+                                        <td class="px-6 py-4 text-gray-900">{{ appointment.staff.user.get_full_name }}</td>
+                                        <td class="px-6 py-4 text-gray-900">{{ appointment.service.name }}</td>
+                                        <td class="px-6 py-4">
+                                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold">
+                                                {{ appointment.get_status_display }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endblock %}

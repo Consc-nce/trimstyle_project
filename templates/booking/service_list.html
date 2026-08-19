@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Services - TrimStyle{% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Page Header -->
+        <div class="mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Our Services</h1>
+            <p class="text-lg text-gray-600">Choose from our range of professional styling and grooming services</p>
+        </div>
+        
+        {% if services_with_staff %}
+            <!-- Services Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for item in services_with_staff %}
+                    <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition overflow-hidden">
+                        <!-- Service Header -->
+                        <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6">
+                            <h2 class="text-2xl font-bold mb-2">{{ item.service.name }}</h2>
+                            <div class="flex items-center justify-between">
+                                <span class="text-3xl font-bold">${{ item.service.price }}</span>
+                                <span class="text-sm bg-white bg-opacity-20 px-3 py-1 rounded">{{ item.service.duration_minutes }}m</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Service Content -->
+                        <div class="p-6">
+                            {% if item.service.description %}
+                                <p class="text-gray-600 mb-4">{{ item.service.description }}</p>
+                            {% endif %}
+                            
+                            <!-- Staff Count -->
+                            <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600">
+                                    <strong>{{ item.staff_count }}</strong> expert stylist{{ item.staff_count|pluralize }} available
+                                </p>
+                            </div>
+                            
+                            <!-- Book Button -->
+                            {% if item.staff_count > 0 and user.is_authenticated %}
+                                <a href="{% url 'booking:select_slot' item.service.id %}" 
+                                   class="w-full inline-block bg-blue-600 text-white text-center px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transform hover:scale-105 transition">
+                                    Book Now
+                                </a>
+                            {% elif item.staff_count > 0 %}
+                                <a href="{% url 'accounts:login' %}" 
+                                   class="w-full inline-block bg-gray-400 text-white text-center px-6 py-3 rounded-lg font-bold cursor-pointer">
+                                    Sign In to Book
+                                </a>
+                            {% else %}
+                                <button disabled 
+                                        class="w-full bg-gray-300 text-gray-600 px-6 py-3 rounded-lg font-bold cursor-not-allowed">
+                                    No Staff Available
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- No Services -->
+            <div class="text-center py-12">
+                <div class="bg-gray-100 rounded-lg p-12">
+                    <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">No Services Available</h2>
+                    <p class="text-gray-600">We're currently setting up our services. Please check back soon.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

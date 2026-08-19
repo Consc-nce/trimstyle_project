@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Booking Confirmed - TrimStyle{% endblock %}
+
+{% block content %}
+    <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Success Message -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Success Header -->
+            <div class="bg-gradient-to-r from-green-600 to-green-800 text-white p-8 text-center">
+                <div class="mb-4">
+                    <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold mb-2">Booking Confirmed!</h1>
+                <p class="text-green-100">Your appointment has been successfully booked</p>
+            </div>
+            
+            <!-- Confirmation Details -->
+            <div class="p-8 space-y-8">
+                <!-- Appointment Details -->
+                <div class="border-2 border-gray-200 rounded-lg p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Appointment Details</h2>
+                    
+                    <div class="space-y-4">
+                        <!-- Appointment ID -->
+                        <div class="flex items-center justify-between py-3 border-b border-gray-200">
+                            <span class="text-gray-600 font-bold">Confirmation #</span>
+                            <span class="text-gray-900 font-bold">{{ appointment.id }}</span>
+                        </div>
+                        
+                        <!-- Date & Time -->
+                        <div class="flex items-center justify-between py-3 border-b border-gray-200">
+                            <span class="text-gray-600 font-bold">Date & Time</span>
+                            <span class="text-gray-900 font-bold">{{ appointment_datetime }}</span>
+                        </div>
+                        
+                        <!-- Service -->
+                        <div class="flex items-center justify-between py-3 border-b border-gray-200">
+                            <span class="text-gray-600 font-bold">Service</span>
+                            <span class="text-gray-900 font-bold">{{ appointment.service.name }}</span>
+                        </div>
+                        
+                        <!-- Duration -->
+                        <div class="flex items-center justify-between py-3 border-b border-gray-200">
+                            <span class="text-gray-600 font-bold">Duration</span>
+                            <span class="text-gray-900 font-bold">{{ appointment.service.duration_minutes }} minutes</span>
+                        </div>
+                        
+                        <!-- Stylist -->
+                        <div class="flex items-center justify-between py-3 border-b border-gray-200">
+                            <span class="text-gray-600 font-bold">Your Stylist</span>
+                            <span class="text-gray-900 font-bold">{{ appointment.staff.user.get_full_name }}</span>
+                        </div>
+                        
+                        <!-- Price -->
+                        <div class="flex items-center justify-between py-3">
+                            <span class="text-gray-600 font-bold">Price</span>
+                            <span class="text-2xl text-green-600 font-bold">${{ service_price }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Important Information -->
+                <div class="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
+                    <h3 class="font-bold text-blue-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zm-11-1a1 1 0 11-2 0 1 1 0 012 0zM8 8a1 1 0 000 2h6a1 1 0 000-2H8zm1 5a1 1 0 11-2 0 1 1 0 012 0zm5-1a1 1 0 100 2h1a1 1 0 100-2h-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Important Information
+                    </h3>
+                    <ul class="text-blue-900 space-y-2">
+                        <li class="flex items-start">
+                            <span class="mr-3">•</span>
+                            <span>Please arrive 5-10 minutes early to your appointment</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-3">•</span>
+                            <span>If you need to cancel or reschedule, please do so at least 24 hours in advance</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-3">•</span>
+                            <span>A confirmation email has been sent to {{ user.email }}</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="mr-3">•</span>
+                            <span>We accept cash, card, and digital payments</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Next Steps -->
+                <div class="bg-gray-50 border-2 border-gray-300 rounded-lg p-6">
+                    <h3 class="font-bold text-gray-900 mb-4">What's Next?</h3>
+                    <ol class="text-gray-700 space-y-2 ml-4" style="list-style-type: decimal;">
+                        <li>Check your email for a confirmation message</li>
+                        <li>Add this appointment to your calendar</li>
+                        <li>Arrive early on the day of your appointment</li>
+                        <li>Enjoy your service with us!</li>
+                    </ol>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex gap-4 pt-4">
+                    <a href="{% url 'accounts:dashboard' %}" class="flex-1 text-center bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                        View My Appointments
+                    </a>
+                    <a href="{% url 'index' %}" class="flex-1 text-center border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-bold hover:bg-gray-50 transition">
+                        Back to Home
+                    </a>
+                </div>
+                
+                <!-- Calendar Download Note -->
+                <div class="text-center text-sm text-gray-600 pt-4">
+                    <p>Bookmark this page or check your email for appointment details. You can manage your appointment from your dashboard.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

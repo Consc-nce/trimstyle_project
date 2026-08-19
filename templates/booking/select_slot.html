@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}Book {{ service.name }} - TrimStyle{% endblock %}
+
+{% block content %}
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-8">
+                <h1 class="text-3xl font-bold mb-2">Book {{ service.name }}</h1>
+                <p class="text-blue-100">{{ service.duration_minutes }} minutes • ${{ service.price }}</p>
+            </div>
+            
+            <!-- Booking Form -->
+            <div class="p-8" x-data="bookingForm()">
+                <form method="post" action="{% url 'booking:submit_booking' %}" class="space-y-8">
+                    {% csrf_token %}
+                    
+                    <!-- Hidden inputs -->
+                    <input type="hidden" name="service_id" value="{{ service.id }}">
+                    <input type="hidden" name="staff_id" x-model="selectedStaffId">
+                    <input type="hidden" name="appointment_date" x-model="selectedDate">
+                    <input type="hidden" name="start_time" x-model="selectedTime">
+                    
+                    <!-- Step 1: Staff Selection -->
+                    <div class="border-b pb-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 1: Choose Your Stylist</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for staff in staff_members %}
+                                <label class="cursor-pointer">
+                                    <input type="radio" 
+                                           name="staff" 
+                                           value="{{ staff.id }}"
+                                           x-model="selectedStaffId"
+                                           @change="resetSlots()"
+                                           class="sr-only">
+                                    <div class="border-2 rounded-lg p-4 transition"
+                                         :class="selectedStaffId == '{{ staff.id }}' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:border-gray-400'">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full flex items-center justify-center text-white font-bold">
+                                                {{ staff.user.first_name|first }}{{ staff.user.last_name|first }}
+                                            </div>
+                                            <div>
+                                                <p class="font-bold text-gray-900">{{ staff.user.first_name }} {{ staff.user.last_name }}</p>
+                                                {% if staff.bio %}
+                                                    <p class="text-sm text-gray-600">{{ staff.bio|truncatewords:15 }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Date Selection -->
+                    <div class="border-b pb-8" x-show="selectedStaffId">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 2: Choose Your Date</h2>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Preferred Date</label>
+                                <input type="date" 
+                                       x-model="selectedDate"
+                                       :min="minDate"
+                                       :max="maxDate"
+                                       @change="loadAvailableSlots()"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            </div>
+                            
+                            <!-- Date Validation -->
+                            <p class="text-sm text-gray-600">
+                                Available from {{ today|date:"F d, Y" }} to {{ maxDate }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Time Slot Selection -->
+                    <div x-show="selectedDate && selectedStaffId">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 3: Choose Your Time</h2>
+                        
+                        <!-- Loading State -->
+                        <div x-show="isLoading" class="text-center py-8">
+                            <div class="inline-block animate-spin">
+                                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-600 mt-2">Loading available times...</p>
+                        </div>
+                        
+                        <!-- Available Slots -->
+                        <div x-show="!isLoading && availableSlots.length > 0" class="space-y-4">
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                <template x-for="slot in availableSlots" :key="slot.start_time">
+                                    <label class="cursor-pointer">
+                                        <input type="radio" 
+                                               name="time" 
+                                               :value="slot.start_time"
+                                               x-model="selectedTime"
+                                               class="sr-only">
+                                        <div class="border-2 rounded-lg p-3 text-center transition font-bold"
+                                             :class="selectedTime == slot.start_time ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300 hover:border-gray-400 text-gray-700'">
+                                            <p x-text="slot.display"></p>
+                                        </div>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+                        
+                        <!-- No Slots Available -->
+                        <div x-show="!isLoading && availableSlots.length === 0 && selectedDate" class="bg-yellow-50 border border-yellow-300 rounded-lg p-6">
+                            <h3 class="font-bold text-yellow-900 mb-2">No Available Slots</h3>
+                            <p class="text-yellow-800">Unfortunately, there are no available time slots for the selected date. Please choose another date.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Booking Summary -->
+                    <div x-show="selectedStaffId && selectedDate && selectedTime" class="bg-gray-50 rounded-lg p-6 border-2 border-blue-600">
+                        <h3 class="font-bold text-lg text-gray-900 mb-4">Booking Summary</h3>
+                        <div class="space-y-2 text-gray-700">
+                            <p><strong>Service:</strong> {{ service.name }}</p>
+                            <p><strong>Duration:</strong> {{ service.duration_minutes }} minutes</p>
+                            <p><strong>Price:</strong> ${{ service.price }}</p>
+                            <p><strong>Date:</strong> <span x-text="formatDate(selectedDate)"></span></p>
+                            <p><strong>Time:</strong> <span x-text="selectedTime"></span></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="flex gap-4">
+                        <a href="{% url 'booking:service_list' %}" class="px-6 py-3 border border-gray-300 rounded-lg font-bold text-gray-700 hover:bg-gray-50">
+                            Back
+                        </a>
+                        <button type="submit"
+                                :disabled="!selectedStaffId || !selectedDate || !selectedTime || isLoading"
+                                :class="selectedStaffId && selectedDate && selectedTime ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer' : 'bg-gray-300 text-gray-600 cursor-not-allowed'"
+                                class="flex-1 px-6 py-3 rounded-lg font-bold transition">
+                            Confirm Booking
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function bookingForm() {
+            return {
+                selectedStaffId: '',
+                selectedDate: '',
+                selectedTime: '',
+                availableSlots: [],
+                isLoading: false,
+                minDate: '{{ min_date }}',
+                maxDate: '{{ max_date }}',
+                today: '{{ today }}',
+                
+                async loadAvailableSlots() {
+                    if (!this.selectedStaffId || !this.selectedDate) return;
+                    
+                    this.isLoading = true;
+                    this.availableSlots = [];
+                    this.selectedTime = '';
+                    
+                    try {
+                        const response = await fetch('{% url "booking:select_slot" service.id %}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                            },
+                            body: JSON.stringify({
+                                staff_id: parseInt(this.selectedStaffId),
+                                date: this.selectedDate
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.availableSlots = data.slots;
+                        } else {
+                            console.error('Error:', data.error);
+                        }
+                    } catch (error) {
+                        console.error('Fetch error:', error);
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+                
+                resetSlots() {
+                    this.availableSlots = [];
+                    this.selectedDate = '';
+                    this.selectedTime = '';
+                },
+                
+                formatDate(dateStr) {
+                    const date = new Date(dateStr + 'T00:00:00');
+                    return date.toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    });
+                }
+            }
+        }
+    </script>
+{% endblock %}

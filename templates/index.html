@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}TrimStyle - Premium Salon & Barber Booking{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-5xl font-bold mb-4">Welcome to TrimStyle</h1>
+            <p class="text-xl text-blue-100 mb-8">Book your perfect look with our top stylists and barbers</p>
+            
+            {% if user.is_authenticated %}
+                <a href="{% url 'booking:service_list' %}" class="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transform hover:scale-105 transition">
+                    Book Now
+                </a>
+            {% else %}
+                <div class="space-x-4">
+                    <a href="{% url 'accounts:register' %}" class="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transform hover:scale-105 transition">
+                        Get Started
+                    </a>
+                    <a href="{% url 'accounts:login' %}" class="inline-block bg-blue-700 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-900 transform hover:scale-105 transition">
+                        Sign In
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-bold text-center mb-12 text-gray-900">Why Choose TrimStyle?</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-gray-50 p-8 rounded-lg text-center hover:shadow-lg transition">
+                    <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Easy Booking</h3>
+                    <p class="text-gray-600">Book appointments in just a few clicks. Choose your preferred stylist and time slot that works for you.</p>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="bg-gray-50 p-8 rounded-lg text-center hover:shadow-lg transition">
+                    <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Expert Stylists</h3>
+                    <p class="text-gray-600">Our team consists of highly skilled professionals with years of experience in the beauty industry.</p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="bg-gray-50 p-8 rounded-lg text-center hover:shadow-lg transition">
+                    <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">100% Satisfaction</h3>
+                    <p class="text-gray-600">We're committed to your satisfaction. Your perfect look is our success.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Services Preview Section -->
+    <section class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-bold text-center mb-4 text-gray-900">Our Services</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">Explore our wide range of professional grooming and styling services tailored to your needs.</p>
+            
+            <div class="text-center">
+                <a href="{% url 'booking:service_list' %}" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transform hover:scale-105 transition">
+                    View All Services
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="bg-blue-600 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold mb-4">Ready for Your Perfect Look?</h2>
+            <p class="text-xl text-blue-100 mb-8">Book an appointment with one of our expert stylists today</p>
+            
+            {% if user.is_authenticated %}
+                <a href="{% url 'booking:service_list' %}" class="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transform hover:scale-105 transition">
+                    Browse Services
+                </a>
+            {% else %}
+                <a href="{% url 'accounts:register' %}" class="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transform hover:scale-105 transition">
+                    Create Your Account
+                </a>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}
